@@ -13,6 +13,7 @@ import {
   PointElement
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+import { FormGroup, FormControlLabel, Checkbox, Box } from '@mui/material';
 
 ChartJS.register(
   CategoryScale,
@@ -29,10 +30,29 @@ ChartJS.register(
 
 const ResultsBarChart = ({ results }) => {
   const [geologicalReserves, setGeologicalReserves] = useState('');
+  const [selectedMethods, setSelectedMethods] = useState({
+    'Максимов': true,
+    'Назаров-Сипачев': true,
+    'Сипачев-Посевич': true,
+    'Сазонов': true,
+    'Пирвердян': true,
+    'Камбаров': true
+  });
   
-  const validResults = results.filter(result => result.remainingOilReserves !== null);
+  const handleMethodChange = (method) => {
+    setSelectedMethods(prev => ({
+      ...prev,
+      [method]: !prev[method]
+    }));
+  };
+  
+  // Filter results based on selected methods
+  const validResults = results
+    .filter(result => result.remainingOilReserves !== null)
+    .filter(result => selectedMethods[result.method]);
+
   const averageValue = validResults.length > 0 
-    ? validResults.reduce((sum, r) => sum + r.remainingOilReserves, 0) / 4 
+    ? validResults.reduce((sum, r) => sum + r.remainingOilReserves, 0) / validResults.length 
     : null;
 
   const labels = validResults.map(result => result.method);
@@ -101,6 +121,22 @@ const ResultsBarChart = ({ results }) => {
 
   return (
     <div>
+      <Box sx={{ mb: 2 }}>
+        <FormGroup row sx={{ flexWrap: 'wrap', gap: 2 }}>
+          {Object.keys(selectedMethods).map(method => (
+            <FormControlLabel
+              key={method}
+              control={
+                <Checkbox
+                  checked={selectedMethods[method]}
+                  onChange={() => handleMethodChange(method)}
+                />
+              }
+              label={method}
+            />
+          ))}
+        </FormGroup>
+      </Box>
       <div style={{ marginBottom: '20px' }}>
         <label style={{ marginRight: '10px' }}>
           Q geological reserves:
