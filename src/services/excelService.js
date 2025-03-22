@@ -85,70 +85,47 @@ export function importExcel(file) {
   });
 }
 
-export function exportExcel(data, calculationResults) {
+export function exportExcel(data) {
   // Create workbook
   const wb = XLSX.utils.book_new();
 
-  // Export raw data
-  const rawData = data.map(row => ({
-    'Годы': row.year,
-    'Нефти': row.oil,
-    'Жидкости': row.liquid,
-    'Воды': row.water,
-    'Обводненность': row.waterCut,
-    'Active points': row.active ? 1 : 0
+  // Export chart data
+  const chartData = data.chartData.map(row => ({
+    'Метод': row.method,
+    'V остаточные': row.remainingOilReserves,
+    'V извлекаемые': row.extractableOilReserves,
+    'Коэффициент A': row.coefficients?.A || 0,
+    'Коэффициент B': row.coefficients?.B || 0,
+    'R²': row.coefficients?.R2 || 0
   }));
-  const wsData = XLSX.utils.json_to_sheet(rawData);
-  XLSX.utils.book_append_sheet(wb, wsData, 'Raw Data');
-
-  // Export calculation results for each method
-  const methods = {
-    'nazarov-sipachev': 'Назаров-Сипачев',
-    'sipachev-posevich': 'Сипачев-Посевич',
-    'maksimov': 'Максимов',
-    'sazonov': 'Сазонов',
-    'pirverdyan': 'Пирвердян',
-    'kambarov': 'Камбаров'
-  };
-
-  for (const [methodKey, methodName] of Object.entries(methods)) {
-    if (calculationResults[methodKey]) {
-      const results = calculationResults[methodKey];
-      
-      // Prepare results data
-      const resultsData = [];
-
-      // Add general results
-      resultsData.push(
-        { 'Параметр': 'A', 'Значение': results.A },
-        { 'Параметр': 'B', 'Значение': results.B },
-        { 'Параметр': 'R²', 'Значение': results.rSquared },
-        { 'Параметр': '', 'Значение': '' }  // Empty row for spacing
-      );
-
-      // Add points data if available
-      if (results.points && results.points.length > 0) {
-        resultsData.push({ 'Параметр': 'Точки расчета:', 'Значение': '' });
-        results.points.forEach((point, idx) => {
-          resultsData.push({
-            'Параметр': `Точка ${idx + 1}`,
-            'Значение': `X: ${point.x}, Y: ${point.y}`
-          });
-        });
-      }
-
-      // Add additional method-specific results
-      if (results.fn) resultsData.push({ 'Параметр': 'fn', 'Значение': results.fn });
-      if (results.fe) resultsData.push({ 'Параметр': 'fe', 'Значение': results.fe });
-      if (results.waterInflux) resultsData.push({ 'Параметр': 'Приток воды', 'Значение': results.waterInflux });
-      if (results.oilRecovery) resultsData.push({ 'Параметр': 'Нефтеотдача', 'Значение': results.oilRecovery });
-
-      // Create worksheet for this method
-      const wsResults = XLSX.utils.json_to_sheet(resultsData);
-      XLSX.utils.book_append_sheet(wb, wsResults, methodName);
-    }
+  
+  // Add average row
+  if (data.average.remainingOilReserves !== null) {
+    chartData.push({
+      'Метод': 'Среднее значение',
+      'V остаточные': data.average.remainingOilReserves,
+      'V извлекаемые': '',
+      'Коэффициент A': '',
+      'Коэффициент B': '',
+      'R²': ''
+    });
   }
 
+  const wsChart = XLSX.utils.json_to_sheet(chartData);
+  XLSX.utils.book_append_sheet(wb, wsChart, 'Результаты методов');
+
+  // Export ORC calculation data
+  const orcData = [
+    { 'Параметр': 'Q geological reserves', 'Значение': data.orcCalculation.geologicalReserves },
+    { 'Параметр': 'Накопленные добыча нефть', 'Значение': data.orcCalculation.cumulativeOilProduction },
+    { 'Параметр': 'V остаточные', 'Значение': data.orcCalculation.remainingOilReserves },
+    { 'Параметр': 'Total', 'Значение': data.orcCalculation.totalNumerator },
+    { 'Параметр': 'ORC (КИН)', 'Значение': data.orcCalculation.orc }
+  ];
+
+  const wsOrc = XLSX.utils.json_to_sheet(orcData);
+  XLSX.utils.book_append_sheet(wb, wsOrc, 'ORC расчет');
+
   // Generate and download file
-  XLSX.writeFile(wb, 'calculation_results.xlsx');
+  XLSX.writeFile(wb, 'chart_results.xlsx');
 }

@@ -13,7 +13,9 @@ import {
   PointElement
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import { FormGroup, FormControlLabel, Checkbox, Box } from '@mui/material';
+import { FormGroup, FormControlLabel, Checkbox, Box, Button } from '@mui/material';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { exportExcel } from '../services/excelService';
 
 ChartJS.register(
   CategoryScale,
@@ -119,9 +121,32 @@ const ResultsBarChart = ({ results }) => {
     }
   };
 
+  const handleExport = () => {
+    const exportData = {
+      chartData: validResults.map(result => ({
+        method: result.method,
+        remainingOilReserves: result.remainingOilReserves,
+        extractableOilReserves: result.extractableOilReserves,
+        coefficients: result.coefficients
+      })),
+      average: {
+        remainingOilReserves: averageValue
+      },
+      orcCalculation: {
+        geologicalReserves: parseFloat(geologicalReserves) || 0,
+        cumulativeOilProduction,
+        remainingOilReserves,
+        totalNumerator,
+        orc: orc || 0
+      }
+    };
+
+    exportExcel(exportData);
+  };
+
   return (
     <div>
-      <Box sx={{ mb: 2 }}>
+      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <FormGroup row sx={{ flexWrap: 'wrap', gap: 2 }}>
           {Object.keys(selectedMethods).map(method => (
             <FormControlLabel
@@ -136,6 +161,14 @@ const ResultsBarChart = ({ results }) => {
             />
           ))}
         </FormGroup>
+        <Button
+          variant="contained"
+          startIcon={<FileDownloadIcon />}
+          onClick={handleExport}
+          sx={{ ml: 2 }}
+        >
+          Export to Excel
+        </Button>
       </Box>
       <div style={{ marginBottom: '20px' }}>
         <label style={{ marginRight: '10px' }}>
