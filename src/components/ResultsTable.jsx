@@ -5,7 +5,12 @@ import ResultsBarChart from './ResultsBarChart';
 const ResultsTable = ({ results }) => {
   const formatNumber = (num) => {
     if (num === null || num === undefined) return 'N/A';
-    return Number(num).toFixed(4);
+    const formatted = Number(num).toFixed(8);
+    // If the number is 0, return with 8 zeros after decimal
+    if (Number(formatted) === 0) {
+      return '0.00000000';
+    }
+    return formatted;
   };
 
   // Calculate averages

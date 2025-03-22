@@ -7,6 +7,16 @@ const ConsoleOutput = ({ result }) => {
     return Number(num).toFixed(4);
   };
 
+  const formatCoefficient = (num) => {
+    if (num === null || num === undefined) return 'N/A';
+    const formatted = Number(num).toFixed(12);
+    // If the number is 0, return with 12 zeros after decimal
+    if (Number(formatted) === 0) {
+      return '0.000000000000';
+    }
+    return formatted;
+  };
+
   if (!result) return null;
 
   return (
@@ -46,8 +56,8 @@ const ConsoleOutput = ({ result }) => {
           Коэффициенты:
         </Typography>
         <Box sx={{ fontFamily: 'monospace' }}>
-          <div>A = {formatNumber(result.coefficients.A)}</div>
-          <div>B = {formatNumber(result.coefficients.B)}</div>
+          <div>A = {formatCoefficient(result.coefficients.A)}</div>
+          <div>B = {formatCoefficient(result.coefficients.B)}</div>
         </Box>
       </Paper>
 

@@ -85,9 +85,12 @@ export function importExcel(file) {
   });
 }
 
-export function exportExcel(data) {
-  // Prepare data for export
-  const exportData = data.map(row => ({
+export function exportExcel(data, calculationResults) {
+  // Create workbook
+  const wb = XLSX.utils.book_new();
+
+  // Export raw data
+  const rawData = data.map(row => ({
     'Годы': row.year,
     'Нефти': row.oil,
     'Жидкости': row.liquid,
@@ -95,12 +98,57 @@ export function exportExcel(data) {
     'Обводненность': row.waterCut,
     'Active points': row.active ? 1 : 0
   }));
+  const wsData = XLSX.utils.json_to_sheet(rawData);
+  XLSX.utils.book_append_sheet(wb, wsData, 'Raw Data');
 
-  // Create worksheet
-  const ws = XLSX.utils.json_to_sheet(exportData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Data');
+  // Export calculation results for each method
+  const methods = {
+    'nazarov-sipachev': 'Назаров-Сипачев',
+    'sipachev-posevich': 'Сипачев-Посевич',
+    'maksimov': 'Максимов',
+    'sazonov': 'Сазонов',
+    'pirverdyan': 'Пирвердян',
+    'kambarov': 'Камбаров'
+  };
+
+  for (const [methodKey, methodName] of Object.entries(methods)) {
+    if (calculationResults[methodKey]) {
+      const results = calculationResults[methodKey];
+      
+      // Prepare results data
+      const resultsData = [];
+
+      // Add general results
+      resultsData.push(
+        { 'Параметр': 'A', 'Значение': results.A },
+        { 'Параметр': 'B', 'Значение': results.B },
+        { 'Параметр': 'R²', 'Значение': results.rSquared },
+        { 'Параметр': '', 'Значение': '' }  // Empty row for spacing
+      );
+
+      // Add points data if available
+      if (results.points && results.points.length > 0) {
+        resultsData.push({ 'Параметр': 'Точки расчета:', 'Значение': '' });
+        results.points.forEach((point, idx) => {
+          resultsData.push({
+            'Параметр': `Точка ${idx + 1}`,
+            'Значение': `X: ${point.x}, Y: ${point.y}`
+          });
+        });
+      }
+
+      // Add additional method-specific results
+      if (results.fn) resultsData.push({ 'Параметр': 'fn', 'Значение': results.fn });
+      if (results.fe) resultsData.push({ 'Параметр': 'fe', 'Значение': results.fe });
+      if (results.waterInflux) resultsData.push({ 'Параметр': 'Приток воды', 'Значение': results.waterInflux });
+      if (results.oilRecovery) resultsData.push({ 'Параметр': 'Нефтеотдача', 'Значение': results.oilRecovery });
+
+      // Create worksheet for this method
+      const wsResults = XLSX.utils.json_to_sheet(resultsData);
+      XLSX.utils.book_append_sheet(wb, wsResults, methodName);
+    }
+  }
 
   // Generate and download file
-  XLSX.writeFile(wb, 'data_export.xlsx');
+  XLSX.writeFile(wb, 'calculation_results.xlsx');
 }

@@ -21,10 +21,10 @@ export default function ResultsPanel({ results }) {
             <TableRow key={index}>
               <TableCell align="center">{index + 1}</TableCell>
               <TableCell align="center">{row.year}</TableCell>
-              <TableCell align="right">{row.x?.toFixed(3) || '0.000'}</TableCell>
-              <TableCell align="right">{row.y?.toFixed(3) || '0.000'}</TableCell>
-              <TableCell align="right">{row.xy?.toFixed(2) || '0.00'}</TableCell>
-              <TableCell align="right">{row.x2?.toFixed(2) || '0.00'}</TableCell>
+              <TableCell align="right">{row.x?.toFixed(4) || '0.0000'}</TableCell>
+              <TableCell align="right">{row.y?.toFixed(4) || '0.0000'}</TableCell>
+              <TableCell align="right">{row.xy?.toFixed(4) || '0.0000'}</TableCell>
+              <TableCell align="right">{row.x2?.toFixed(4) || '0.0000'}</TableCell>
             </TableRow>
           ))}
         </TableBody>
