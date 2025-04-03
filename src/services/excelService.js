@@ -104,7 +104,7 @@ export function exportExcel(data) {
     chartData.push({
       'Метод': 'Среднее значение',
       'V остаточные': data.average.remainingOilReserves,
-      'V извлекаемые': '',
+      'V извлекаемые': data.average.extractableOilReserves,
       'Коэффициент A': '',
       'Коэффициент B': '',
       'R²': ''
@@ -112,14 +112,14 @@ export function exportExcel(data) {
   }
 
   const wsChart = XLSX.utils.json_to_sheet(chartData);
-  XLSX.utils.book_append_sheet(wb, wsChart, 'Результаты методов');
+  // XLSX.utils.book_append_sheet(wb, wsChart, 'Результаты методов');
 
   // Export ORC calculation data
   const orcData = [
     { 'Параметр': 'Q geological reserves', 'Значение': data.orcCalculation.geologicalReserves },
     { 'Параметр': 'Накопленные добыча нефть', 'Значение': data.orcCalculation.cumulativeOilProduction },
-    { 'Параметр': 'V остаточные', 'Значение': data.orcCalculation.remainingOilReserves },
-    { 'Параметр': 'Total', 'Значение': data.orcCalculation.totalNumerator },
+    { 'Параметр': 'V остаточные (средниее)', 'Значение': data.average.remainingOilReserves },
+    { 'Параметр': 'V извлекаемые (средниее)', 'Значение': data.average.extractableOilReserves },
     { 'Параметр': 'ORC (КИН)', 'Значение': data.orcCalculation.orc }
   ];
 

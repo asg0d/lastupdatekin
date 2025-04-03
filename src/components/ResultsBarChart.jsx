@@ -161,14 +161,14 @@ const ResultsBarChart = ({ results }) => {
             />
           ))}
         </FormGroup>
-        <Button
+        {/* <Button
           variant="contained"
           startIcon={<FileDownloadIcon />}
           onClick={handleExport}
           sx={{ ml: 2 }}
         >
           Export to Excel
-        </Button>
+        </Button> */}
       </Box>
       <div style={{ marginBottom: '20px' }}>
         <label style={{ marginRight: '10px' }}>
